@@ -1,0 +1,24 @@
+{
+  "name": "contentful-localization-util",
+  "version": "1.0.0",
+  "description": "(Third party) utility functions helping with a common but unsupported localization use case",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beyondhelloworld/contentful-localization-util.git"
+  },
+  "keywords": [
+    "contentful",
+    "localization",
+    "resolution"
+  ],
+  "author": "David Pfahler",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/beyondhelloworld/contentful-localization-util/issues"
+  },
+  "homepage": "https://github.com/beyondhelloworld/contentful-localization-util#readme"
+}
