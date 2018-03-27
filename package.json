@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "(Third party) utility functions helping with a common but unsupported localization use case",
   "main": "index.js",
+  "engines": {
+    "node": ">8.3"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,5 +23,9 @@
   "bugs": {
     "url": "https://github.com/beyondhelloworld/contentful-localization-util/issues"
   },
-  "homepage": "https://github.com/beyondhelloworld/contentful-localization-util#readme"
+  "homepage": "https://github.com/beyondhelloworld/contentful-localization-util#readme",
+  "dependencies": {
+    "colors": "^1.2.1",
+    "lodash": "^4.17.5"
+  }
 }
