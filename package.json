@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/beyondhelloworld/contentful-localization-util#readme",
   "dependencies": {
-    "colors": "^1.2.1",
     "lodash": "^4.17.5"
   }
 }

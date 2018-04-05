@@ -1,4 +1,3 @@
-const {red} = require('colors')
 const isObject = require('lodash/isObject')
 const memoize = require('lodash/memoize')
 const mapValues = require('lodash/mapValues')
@@ -151,6 +150,7 @@ module.exports = async client => {
     defaultLocale,
     resolve: async data => {
       const dataByLocale = {}
+      const errorsByLocale = {}
       const defaultData = dataByLocale[defaultLocale.code] = naiveResolve(data.fields, defaultLocale)
       const alternativeLocales = locales.filter(locale => locale !== defaultLocale)
       await Promise.all(alternativeLocales.map(async locale => {
@@ -159,11 +159,11 @@ module.exports = async client => {
         try {
           fields = await resolve({data, defaultData})
         } catch (e) {
-          return console.log(red(e.message + `\n\t for locale ${locale.code}`))
+          return errorsByLocale[locale.code] = e.message + `\n\t for locale ${locale.code}`
         }
         dataByLocale[locale.code] = fields
       }))
-      return dataByLocale
+      return {data: dataByLocale, errors: errorsByLocale}
     }
   }
 }
