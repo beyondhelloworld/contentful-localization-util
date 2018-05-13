@@ -29,7 +29,7 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
     // Assets are localized, but only one level deep. so we can resolve naively:
     if (isAsset(data)) {
       return mapValues(data.fields, value => {
-        if (value[locale.code]) {
+        if (value[locale.code] !== undefined) {
           return value[locale.code]
         }
         return value[defaultLocale.code]
@@ -46,7 +46,7 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
       const field = fields.find(field => field.id === key)
 
       if (field.localized) {
-        if (value[locale.code]) {
+        if (value[locale.code] !== undefined) {
           if (Array.isArray(value[locale.code])) {
             let subresult = []
             for (let i in value[locale.code]) {
