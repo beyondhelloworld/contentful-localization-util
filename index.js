@@ -19,7 +19,12 @@ const isAsset = data => isObject(data) && data.sys && data.sys.type === 'Asset'
 const isLink = data => isObject(data) && data.sys && data.sys.contentType.sys.type
 
 const makeResolve = ({locale, defaultLocale, getFields}) => {
-  return async function resolve ({data, defaultData}) {
+  return async function resolve ({data, defaultData, seen}) {
+    seen = seen || new Map()
+    // Return cached result if an obj has previously been resolved
+    if (seen.has(data)) {
+      return seen.get(data)
+    }
     // If data is not an entry, we reached a primitive value
     // we can return.
     if (!isEntry(data) && !isAsset(data)) {
@@ -39,9 +44,11 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
     const result = {
       locale$$: locale,
     }
+    seen.set(data, result)
+
     const contentType = data.sys.contentType.sys.id
     const fields = await getFields(contentType)
-    await Promise.all(Object.keys(data.fields).map(async key => {
+    for (let key of Object.keys(data.fields)) {
       const value = data.fields[key]
       const field = fields.find(field => field.id === key)
 
@@ -56,6 +63,7 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
                 res = await resolve({
                   data: item,
                   defaultData: defaultData[key][i],
+                  seen,
                 })
                 subresult.push(res)
               } catch (e) {
@@ -69,7 +77,8 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
                 }
               }
             }
-            return result[key] = subresult
+            result[key] = subresult
+            continue
           }
 
           let subresult
@@ -77,13 +86,15 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
             subresult = await resolve({
               data: value[locale.code],
               defaultData: defaultData[key],
+              seen,
             })
           } catch (e) {
             // Append kind a "stack-trace-like" message so the error can be
             // traced back to the entry that was incomplete.
             throw new Error(`${e.message}\n\tin localized field "${field.id}" of type "${field.type}" for key "${key}"`)
           }
-          return result[key] = subresult
+          result[key] = subresult
+          continue
         }
 
         // if not value[locale.code] && field.required
@@ -92,7 +103,8 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
         }
 
         // log('yellow')(`Non-required localized field ${field.id} will be set to null for locale ${locale.code}`)
-        return result[key] = null
+        result[key] = null
+        continue
       }
 
       if (Array.isArray(value[defaultLocale.code])) {
@@ -104,6 +116,7 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
             res = await resolve({
               data: item,
               defaultData: defaultData[key][i],
+              seen,
             })
             subresult.push(res)
           } catch (e) {
@@ -117,7 +130,8 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
             }
           }
         }
-        return result[key] = subresult
+        result[key] = subresult
+        continue
       }
 
       let subresult
@@ -125,17 +139,15 @@ const makeResolve = ({locale, defaultLocale, getFields}) => {
         subresult = await resolve({
           data: value[defaultLocale.code],
           defaultData: defaultData[key],
+          seen,
         })
       } catch (e) {
         // Append kind a "stack-trace-like" message so the error can be
         // traced back to the entry that was incomplete.
         throw new Error(`${e.message}\n\tin non-localized field "${field.id}" of type Link for key "${key}"`)
       }
-      return result[key] = subresult
-
-      // this case shouldn't happen
-      throw new Error(`resolve fell through; this shouldn't happen.`)
-    }))
+      result[key] = subresult
+    }
     return result
   }
 }
